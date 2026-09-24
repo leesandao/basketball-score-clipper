@@ -1,0 +1,4 @@
+interface:
+  display_name: "Basketball Score Clipper"
+  short_description: "Detect and clip complete made-basket sequences"
+  default_prompt: "Use $basketball-score-clipper to find made baskets in my videos and create complete shot-to-score clips."
