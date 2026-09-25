@@ -82,6 +82,7 @@ def main() -> int:
     parser.add_argument("--frame-step", type=int, default=1)
     parser.add_argument("--trace-csv", type=Path)
     parser.add_argument("--progress", action="store_true")
+    parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
     try:
@@ -101,6 +102,11 @@ def main() -> int:
             parser.error(f"{name} must contain three values between 0 and 255")
         return values  # type: ignore[return-value]
 
+    for name in ("max_gap", "max_crossing_time", "dedupe_seconds", "pre_roll", "post_roll"):
+        if not math.isfinite(getattr(args, name)) or getattr(args, name) < 0:
+            parser.error(f"--{name.replace('_', '-')} must be finite and non-negative")
+    if args.max_gap == 0 or args.max_crossing_time == 0:
+        parser.error("tracking intervals must be positive")
     if args.frame_step < 1:
         parser.error("--frame-step must be at least 1")
     if not 0 <= args.motion_threshold <= 255:
@@ -111,6 +117,18 @@ def main() -> int:
     source = args.input.expanduser().resolve()
     if not source.is_file():
         raise FileNotFoundError(source)
+
+    output = args.output.expanduser().resolve()
+    paths = [output]
+    if args.trace_csv:
+        paths.append(args.trace_csv.expanduser().resolve())
+    if len(set(paths)) != len(paths):
+        raise ValueError("events and trace must use different output paths")
+    for path in paths:
+        if path == source or (path.exists() and path.samefile(source)):
+            raise ValueError("output must not overwrite the source video")
+        if path.exists() and not args.overwrite:
+            raise FileExistsError(f"output exists: {path}; use --overwrite intentionally")
 
     capture = cv2.VideoCapture(str(source))
     if not capture.isOpened():
@@ -143,6 +161,7 @@ def main() -> int:
     next_progress_time = 10.0
     kernel = np.ones((3, 3), np.uint8)
 
+    previous_timestamp = None
     while True:
         ok, frame = capture.read()
         if not ok:
@@ -150,7 +169,12 @@ def main() -> int:
         frame_index += 1
         if frame_index % args.frame_step:
             continue
-        timestamp = frame_index / fps
+        timestamp = float(capture.get(cv2.CAP_PROP_POS_MSEC)) / 1000.0
+        if (not math.isfinite(timestamp) or timestamp < 0 or
+                (previous_timestamp is not None and timestamp <= previous_timestamp)):
+            capture.release()
+            raise RuntimeError("decoder did not provide increasing presentation timestamps; use visual review")
+        previous_timestamp = timestamp
         if args.progress and timestamp >= next_progress_time:
             print(
                 f"processed {frame_index}/{frame_count or '?'} frames; candidates={len(events)}",
@@ -217,7 +241,8 @@ def main() -> int:
             if history and timestamp - history[-1]["time"] > args.max_gap:
                 history.clear()
             history.append(chosen)
-            trace.append({"frame": frame_index, **chosen})
+            if args.trace_csv:
+                trace.append({"frame": frame_index, **chosen})
         while history and timestamp - history[0]["time"] > args.max_crossing_time:
             history.popleft()
 
@@ -277,18 +302,18 @@ def main() -> int:
             "mode": "candidate-only",
             "frame_size": [width, height],
             "fps": fps,
+            "timebase": "decoder-presentation-timestamps",
             "hoop_roi": list(args.hoop_roi),
         },
         "events": events,
     }
-    output.write_text(
-        json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    with output.open("w" if args.overwrite else "x", encoding="utf-8") as handle:
+        handle.write(json.dumps(document, indent=2, ensure_ascii=False) + "\n")
 
     if args.trace_csv:
         trace_path = args.trace_csv.expanduser().resolve()
         trace_path.parent.mkdir(parents=True, exist_ok=True)
-        with trace_path.open("w", newline="", encoding="utf-8") as handle:
+        with trace_path.open("w" if args.overwrite else "x", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(
                 handle, fieldnames=("frame", "time", "x", "y", "quality")
             )

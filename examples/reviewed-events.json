@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "source": "demo-game.mp4",
+  "source_duration": 120,
+  "example_only": true,
+  "description": "Synthetic documentation fixture; not derived from a real match.",
+  "events": [
+    {
+      "id": "demo-001",
+      "result": "made",
+      "confidence": 0.72,
+      "score_time": 12.6,
+      "basket_entry_time": 12.345,
+      "entry_time_basis": "observed_frame",
+      "review": {
+        "status": "accepted",
+        "notes": "Synthetic example of an accepted event; no real video is included."
+      }
+    },
+    {
+      "id": "demo-002",
+      "result": "made_candidate",
+      "confidence": 0.6,
+      "score_time": 34.2,
+      "review": {
+        "status": "pending",
+        "notes": "Synthetic uncertain candidate; excluded from SRT."
+      }
+    }
+  ]
+}

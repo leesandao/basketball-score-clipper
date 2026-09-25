@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from collections import deque
 from pathlib import Path
 
@@ -52,6 +53,43 @@ class ClipEventTests(unittest.TestCase):
 
     def test_output_name_is_sanitized(self) -> None:
         self.assertEqual(clip_events.sanitize("Game 1 / score"), "Game-1-score")
+
+    def test_visual_acceptance_preserves_low_detector_confidence(self) -> None:
+        event = {"result": "made", "confidence": 0.72, "review": {"status": "accepted"}}
+        self.assertTrue(clip_events.event_selected(event, 0.85, False))
+
+    def test_low_candidate_is_filtered(self) -> None:
+        self.assertFalse(clip_events.event_selected(
+            {"result": "made_candidate", "confidence": 0.1}, 0.55, True))
+
+    def test_rejected_and_pending_are_not_final_makes(self) -> None:
+        for status in ("rejected", "pending"):
+            self.assertFalse(clip_events.event_selected(
+                {"result": "made", "confidence": 0.99, "review": {"status": status}}, 0.85, False))
+
+    def test_invalid_event_timeline(self) -> None:
+        for event in ({"score_time": -1}, {"score_time": 5, "release_time": 6},
+                      {"score_time": 5, "clip_start": 6, "clip_end": 9},
+                      {"score_time": 5, "clip_start": 1}):
+            with self.assertRaises(ValueError):
+                clip_events.event_bounds(event, self.args)
+
+    def test_hardware_failure_falls_back_to_cpu(self) -> None:
+        with patch.object(clip_events, "list_encoders", return_value={"h264_nvenc", "libx264"}), \
+             patch.object(clip_events.subprocess, "run", side_effect=[
+                 subprocess.CompletedProcess([], 1), subprocess.CompletedProcess([], 0)]):
+            self.assertEqual(clip_events.working_encoder("ffmpeg", "auto"), "libx264")
+
+    def test_input_and_hardlink_are_protected_even_with_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp) / "source.mp4"
+            source.write_bytes(b"original")
+            alias = Path(temp) / "alias.mp4"
+            alias.hardlink_to(source)
+            for output in (source, alias):
+                with self.assertRaises(ValueError):
+                    clip_events.protect_output(output, {source.resolve()}, True)
+            self.assertEqual(source.read_bytes(), b"original")
 
 
 class CrossingTests(unittest.TestCase):

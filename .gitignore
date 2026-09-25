@@ -15,3 +15,6 @@ models/
 *.pt
 *.onnx
 *.engine
+
+output/
+runtime.json

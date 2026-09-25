@@ -59,3 +59,29 @@ All boundaries are clamped to the source duration. An event whose end is not aft
 ## Review updates
 
 After visual review, change a real make from `made_candidate` to `made` and set `review.status` to `accepted`. For a miss or false positive, set `result` to `rejected` or `miss` and use `review.status: rejected`. Preserve the original evidence and add a short note instead of deleting the event.
+
+## Selection and time provenance
+
+Explicit visual acceptance (`result: made`, `review.status: accepted`) bypasses
+the model confidence threshold. Preserve the original confidence. A rejected
+review is never selected; a pending make is not automatically accepted.
+Candidates must still meet `--min-confidence` even with `--include-candidates`.
+
+All event times refer to the original source timeline. When reviewing a proxy,
+read `source-map.json` and add `source_start` to its playback time. Record the
+reviewer/method and observations in `review.notes`; never mark an export test
+or an unobserved basket as accepted. Explicit bounds must include `score_time`.
+
+## Timestamp-only output
+
+- `basket_entry_time`: optional finite non-negative source time of entry into the
+  rim opening. This is distinct from the later `score_time` confirmation.
+- `entry_time_basis`: `observed_frame` or `estimated` when entry time is present.
+- For an observed frame, choose the first frame showing downward entry; inspect
+  subsequent frames to confirm the make. Do not infer precision from formatting.
+- `review.notes`: explain occlusion or the uncertainty interval if estimated.
+
+`export_timestamps.py` includes only `made` + `review.status: accepted` by default.
+It prefers entry time; older events without it are explicitly labeled as
+confirmation timestamps awaiting precise entry localization. Pending events are
+optional and exported separately, never counted as confirmed makes.

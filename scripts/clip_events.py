@@ -30,7 +30,7 @@ def probe_media(ffprobe: str, source: Path) -> dict[str, Any]:
             "-v",
             "error",
             "-show_entries",
-            "format=duration:stream=codec_type,pix_fmt,color_transfer,color_primaries,color_space",
+            "format=duration:stream=codec_type,width,height,avg_frame_rate,r_frame_rate,pix_fmt,color_transfer,color_primaries,color_space:stream_side_data=rotation",
             "-of",
             "json",
             str(source),
@@ -53,6 +53,8 @@ def probe_media(ffprobe: str, source: Path) -> dict[str, Any]:
         (stream for stream in payload.get("streams", []) if stream.get("codec_type") == "video"),
         {},
     )
+    if not video:
+        raise ValueError("source has no video stream")
     transfer = str(video.get("color_transfer") or "").lower()
     hdr = transfer in {"smpte2084", "arib-std-b67"}
     return {"duration": duration, "hdr": hdr, "video": video}
@@ -79,6 +81,53 @@ def choose_encoder(requested: str, encoders: set[str]) -> str:
         if encoder in encoders:
             return encoder
     raise RuntimeError("no supported H.264 encoder found")
+
+
+def working_encoder(ffmpeg: str, requested: str) -> str:
+    available = list_encoders(ffmpeg)
+    if requested != "auto":
+        return choose_encoder(requested, available)
+    for encoder in ("h264_nvenc", "h264_videotoolbox", "libx264"):
+        if encoder not in available:
+            continue
+        try:
+            probe = subprocess.run(
+                [ffmpeg, "-v", "error", "-f", "lavfi", "-i",
+                 "color=s=64x64:d=0.1", "-frames:v", "1", "-c:v", encoder,
+                 "-pix_fmt", "yuv420p", "-f", "null", "-"],
+                capture_output=True, timeout=20, check=False,
+            )
+            if probe.returncode == 0:
+                return encoder
+        except (OSError, subprocess.SubprocessError):
+            continue
+    raise RuntimeError("no supported H.264 encoder passed the runtime check")
+
+
+def event_selected(event: dict[str, Any], minimum: float, include_candidates: bool) -> bool:
+    confidence = finite_number(event.get("confidence"), "confidence")
+    if not 0 <= confidence <= 1:
+        raise ValueError("confidence must be between 0 and 1")
+    review = event.get("review") or {}
+    if not isinstance(review, dict):
+        raise ValueError("review must be an object")
+    status = review.get("status")
+    if status == "rejected":
+        return False
+    result = event.get("result")
+    if result == "made":
+        return status == "accepted" or (status != "pending" and confidence >= minimum)
+    return include_candidates and result == "made_candidate" and confidence >= minimum
+
+
+def protect_output(path: Path, protected: set[Path], overwrite: bool) -> None:
+    resolved = path.resolve()
+    if resolved in protected or any(
+        path.exists() and item.exists() and path.samefile(item) for item in protected
+    ):
+        raise ValueError(f"output would overwrite an input: {path}")
+    if path.exists() and not overwrite:
+        raise FileExistsError(f"output exists; choose another path or pass --overwrite: {path}")
 
 
 def encoder_args(encoder: str) -> list[str]:
@@ -129,6 +178,13 @@ def resolve_source(raw: str, source_root: Path | None, events_path: Path) -> Pat
 
 def event_bounds(event: dict[str, Any], args: argparse.Namespace) -> tuple[float, float]:
     score = finite_number(event.get("score_time"), "score_time")
+    for field in ("score_time", "release_time", "candidate_start", "clip_start", "clip_end"):
+        if event.get(field) is not None and finite_number(event[field], field) < 0:
+            raise ValueError(f"{field} must be non-negative")
+    if (event.get("clip_start") is None) != (event.get("clip_end") is None):
+        raise ValueError("clip_start and clip_end must be supplied together")
+    if event.get("release_time") is not None and event["release_time"] > score:
+        raise ValueError("release_time must not follow score_time")
     if event.get("clip_start") is not None and event.get("clip_end") is not None:
         start = finite_number(event["clip_start"], "clip_start")
         end = finite_number(event["clip_end"], "clip_end")
@@ -141,6 +197,8 @@ def event_bounds(event: dict[str, Any], args: argparse.Namespace) -> tuple[float
     else:
         start = score - args.fallback_lead
         end = score + args.post_roll
+    if not start <= score <= end:
+        raise ValueError("clip boundaries must contain score_time")
     return max(0.0, start), end
 
 
@@ -169,7 +227,7 @@ def main() -> int:
     if not 0 <= args.min_confidence <= 1:
         parser.error("--min-confidence must be between 0 and 1")
     for name in ("pre_roll", "fallback_lead", "post_roll"):
-        if getattr(args, name) < 0:
+        if not math.isfinite(getattr(args, name)) or getattr(args, name) < 0:
             parser.error(f"--{name.replace('_', '-')} must be non-negative")
 
     ffmpeg = shutil.which("ffmpeg")
@@ -183,7 +241,7 @@ def main() -> int:
     if not isinstance(document, dict) or not isinstance(document.get("events"), list):
         raise ValueError("event file must be an object containing an events array")
 
-    encoder = choose_encoder(args.encoder, list_encoders(ffmpeg))
+    encoder = working_encoder(ffmpeg, args.encoder)
     allowed_results = {"made"}
     if args.include_candidates:
         allowed_results.add("made_candidate")
@@ -194,12 +252,7 @@ def main() -> int:
             raise ValueError(f"event {index} must be an object")
         if event.get("result") not in allowed_results:
             continue
-        confidence = finite_number(event.get("confidence"), "confidence")
-        if not 0 <= confidence <= 1:
-            raise ValueError(f"event {index} confidence must be between 0 and 1")
-        if confidence < args.min_confidence and not (
-            args.include_candidates and event.get("result") == "made_candidate"
-        ):
+        if not event_selected(event, args.min_confidence, args.include_candidates):
             continue
         source_raw = event.get("source") or document.get("source")
         if not isinstance(source_raw, str) or not source_raw:
@@ -210,14 +263,16 @@ def main() -> int:
         print(json.dumps({"status": "done", "clips": [], "notes": "no events selected"}))
         return 0
 
+    protected = {events_path}
+    for event in document["events"]:
+        raw = event.get("source") or document.get("source")
+        if isinstance(raw, str) and raw:
+            protected.add(resolve_source(raw, args.source_root, events_path))
     args.output_dir = args.output_dir.expanduser().resolve()
     manifest_path = None
     if not args.dry_run:
         manifest_path = (args.manifest or (args.output_dir / "clips-manifest.json")).resolve()
-        if manifest_path.exists() and not args.overwrite:
-            raise FileExistsError(
-                f"manifest exists; pass --overwrite or choose --manifest: {manifest_path}"
-            )
+        protect_output(manifest_path, protected, args.overwrite)
     if not args.dry_run:
         args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -237,6 +292,8 @@ def main() -> int:
             raise RuntimeError(
                 f"HDR source requires an HDR-aware workflow or --encoder copy: {source}"
             )
+        if finite_number(event.get("score_time"), "score_time") >= duration:
+            raise ValueError("score_time must be within the source duration")
         start, end = event_bounds(event, args)
         end = min(end, duration)
         if end <= start:
@@ -248,8 +305,9 @@ def main() -> int:
         if output in planned_outputs:
             raise ValueError(f"duplicate output path: {output}")
         planned_outputs.add(output)
-        if output.exists() and not args.overwrite:
-            raise FileExistsError(f"output exists; pass --overwrite to replace it: {output}")
+        protect_output(output, protected, args.overwrite)
+        if manifest_path == output.resolve():
+            raise ValueError("manifest path must differ from every clip output")
 
         command = [
             ffmpeg,
@@ -287,15 +345,17 @@ def main() -> int:
             "command": command,
             "status": "planned" if args.dry_run else "pending",
         }
-        if not args.dry_run:
-            proc = subprocess.run(command, capture_output=True, text=True, check=False)
+        results.append(result)
+
+    # Validate the entire plan before creating any clips.
+    if not args.dry_run:
+        for result in results:
+            proc = subprocess.run(result["command"], capture_output=True, text=True, check=False)
             if proc.returncode != 0:
                 result["status"] = "failed"
                 result["error"] = proc.stderr.strip()
-                results.append(result)
                 break
             result["status"] = "created"
-        results.append(result)
 
     manifest = {
         "version": 1,
