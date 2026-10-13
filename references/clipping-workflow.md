@@ -21,9 +21,11 @@ Do not assume the editor's embedded FFmpeg is usable as a standalone binary.
 
 - **Fixed-camera baseline:** Use when one hoop remains stationary, the ball is visibly orange, and lighting is reasonably stable. Run `scripts/detect_fixed_camera.py` with a verified hoop ROI. Its results are `made_candidate` events and require visual review.
 - **Detector-backed analysis:** Use for handheld footage, moving/zooming cameras, crowded games, poor lighting, heavy occlusion, or multiple hoops. Use the project's trained ball/hoop detector and tracker; it must emit the event format in [references/event-schema.md](event-schema.md). Never imply that a production detector exists when weights or an inference command are absent.
-- **Known-event clipping:** Use when timestamps or an event JSON already exist. Skip detection and validate/cut those events directly.
+- **Known-event clipping:** Use when timestamps or an event JSON already exist. Skip detection, recheck the selected source attempts, then validate/cut those events. An old acceptance or contact-sheet thumbnail is not a substitute for this review.
 
 Read [references/detection-modes.md](detection-modes.md) when choosing or implementing a detector. Read [references/event-schema.md](event-schema.md) before generating or editing event files.
+For a ranked montage, player coverage, music or revisions, read
+[highlight-editing.md](highlight-editing.md) before selecting and composing clips.
 
 ## Workflow
 
@@ -48,12 +50,12 @@ Read [references/detection-modes.md](detection-modes.md) when choosing or implem
      ```
 
    - For detector-backed analysis, associate the same ball track across the upward approach and downward hoop crossing. Generate one event per attempt, not one event per confirming frame.
-5. Validate the event timeline. Strong made-shot evidence normally includes a ball center above the rim followed by a downward crossing through the hoop corridor and a ball center below the rim within a plausible interval. Rim contact, net motion, audio, and pose are supporting evidence only.
+5. Validate the event timeline. Follow the same ball through the rim opening and out of the net. Above/below-rim positions in a projected corridor are insufficient when a front/side miss overlaps the net. Rim contact, net motion, audio, and pose are supporting evidence only. Recheck the scorer across the whole attempt; an assist or a miss followed by a teammate's put-back is not the initial player's made basket.
 6. Apply confidence routing:
    - Explicit visual acceptance (`result: made`, `review.status: accepted`) takes precedence over detector confidence; preserve the original confidence. A rejected review is never exported.
    - `confidence >= 0.85`: may be accepted automatically only for a validated detector.
    - `0.55 <= confidence < 0.85`: create review clips and require visual confirmation.
-   - `< 0.55`: retain in metadata if useful, but do not include in the final montage.
+   - Unreviewed candidates with `confidence < 0.55`: retain in metadata if useful, but do not include in the final montage. Explicit visual acceptance above still takes precedence.
    - Fixed-camera baseline output is always review-first, regardless of its numeric confidence. Set both `result` and `review.status` after review.
 7. Preserve the complete action. Prefer an observed `release_time`; otherwise start from `candidate_start`. When neither exists, default to four seconds before `score_time`. Default end is 1.5 seconds after `score_time`. Keep more context rather than cutting off the gather or release.
 8. Cut accepted events with the bundled script:
@@ -65,7 +67,7 @@ Read [references/detection-modes.md](detection-modes.md) when choosing or implem
    ```
 
    Add `--include-candidates --min-confidence 0.55` only when intentionally creating review clips. Use `--encoder auto` to prefer NVENC on a compatible RTX host, VideoToolbox on macOS, and `libx264` otherwise. Do not use stream copy when frame-accurate boundaries matter. For HDR sources, use the installed `ffmpeg-skill` HDR-aware cut workflow; the bundled fallback refuses an implicit HDR-to-SDR conversion.
-9. Inspect at least the beginning, release/flight, rim crossing, and ending of every accepted clip. Reject clips that begin after the gather/release, end before the score is visually clear, duplicate another event, or show a miss. Use `ffmpeg-skill` to join verified clips when available.
+9. Inspect at least the beginning, release/flight, rim crossing, and ending of every accepted clip, then check these moments in the final rendered montage. Reject clips that begin after the gather/release, end before the score is visually clear, duplicate another event, or show a miss. A successful encode or a hoop inset alone does not prove a make. Use `ffmpeg-skill` to join verified clips when available.
 10. Report source files, accepted/rejected/review counts, selected time ranges, encoder used, output locations, and any detector limitations. Never report a candidate as a confirmed make without the required evidence or review.
 
 ## Output layout

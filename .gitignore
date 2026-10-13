@@ -12,6 +12,12 @@ models/
 *.mov
 *.mkv
 *.avi
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.aac
+*.ogg
 *.pt
 *.onnx
 *.engine

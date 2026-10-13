@@ -1,6 +1,6 @@
 ---
 name: basketball-score-clipper
-description: Find made-basket timestamps in local or NAS basketball videos and output a chronological time table. Default to timestamp-only analysis without rendering clips; create highlight videos only when explicitly requested.
+description: Find made-basket timestamps in local or NAS basketball videos and export a chronological table and SRT markers. When explicitly requested, curate and edit verified highlights with player coverage, court audio, songs and beat alignment. Default to timestamps only.
 ---
 
 # Basketball basket timestamps
@@ -21,6 +21,9 @@ Inspect duration, rotation and timing once; record `source_duration` and scanned
 ranges to distinguish complete and partial analysis. Never infer timestamps from
 the filename or wall-clock recording time; use actual presentation timestamps.
 Reuse existing events and reviewed evidence for the same source when available.
+Reuse avoids rescanning; it does not establish that an old acceptance is correct.
+When producing highlights, recheck each selected attempt and the rendered basket.
+Treat user-reported misses as exclusions until the disputed attempt is resolved.
 
 ## Fast timestamp workflow
 
@@ -50,6 +53,9 @@ Reuse existing events and reviewed evidence for the same source when available.
    `result: made` and `review.status: accepted` for confirmed events, `miss` or
    `rejected` for false positives, and leave ambiguity pending. Confidence alone
    does not confirm baseline candidates.
+   A ball falling in front of the net can overlap it in a two-dimensional crop.
+   Net movement or a below-rim ball alone is insufficient: follow the same ball
+   through the opening and its exit. Expand the view when this is ambiguous.
 5. Set `basket_entry_time` to the first observed frame where the descending ball
    enters the rim opening; set `entry_time_basis: observed_frame`. Preserve
    `score_time` as the detector's later confirmation time. If only a bracketing
@@ -82,7 +88,20 @@ Reuse existing events and reviewed evidence for the same source when available.
    entries. A partial scan must not be presented as the complete match. Baseline
    candidates may miss baskets; do not claim full recall without evaluation.
 
+## Corrections and explicit highlight requests
+
+If a user reports a wrong basket, resolve which source event they mean. In a
+countdown, playback position and rank label differ: the seventh segment of a
+Top 10 is NO.04, whereas NO.07 is the fourth segment. Ask for the label or time
+when the reference is ambiguous; do not silently choose one interpretation.
+Remove the disputed event from the selection, preserve its previous review,
+and update the authoritative event record and affected table/SRT/video outputs.
+Do not describe the remaining old records as newly reviewed.
+
 For event fields read [references/event-schema.md](references/event-schema.md).
-Only when the user explicitly asks to cut video, read
-[references/clipping-workflow.md](references/clipping-workflow.md) and, if needed,
-[references/cpu-editor-workflow.md](references/cpu-editor-workflow.md).
+Only when video output is explicitly requested, read
+[references/clipping-workflow.md](references/clipping-workflow.md). For Top N
+selection, player balance, music, mixing, beat alignment or a montage revision,
+also read [references/highlight-editing.md](references/highlight-editing.md).
+Use [references/cpu-editor-workflow.md](references/cpu-editor-workflow.md) when
+bounded proxies or Jianying desktop review are needed.

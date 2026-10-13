@@ -9,6 +9,7 @@
 - **Computers without a dedicated GPU:** baseline detection uses OpenCV/NumPy; the exporter uses the Python standard library. CUDA is not needed.
 - **NAS footage:** read mounted file paths without uploading footage or transcoding the whole recording first.
 - **Previously reviewed data:** reuse event JSON to regenerate tables or SRT files with different marker lengths.
+- **Explicit Top 5/Top 10 requests:** assist with reviewed highlights, defensive pressure, player coverage and requested shot quotas, with optional court-audio/song mixing and beat edits. See the [highlight guide](highlights.en.md).
 
 ## Additional handling required
 
@@ -28,6 +29,7 @@
 - Confidence is a heuristic score, not a calibrated probability.
 - This release has no full-match precision/recall benchmark or fixed throughput promise.
 - SRT is a helper subtitle track, not native editor markers or a complete editor project.
+- Player coverage, three-point classification, song choice and listening quality are not automatically validated features; the highlight workflow needs actual visual and listening checks.
 
 ## Speed and accuracy
 

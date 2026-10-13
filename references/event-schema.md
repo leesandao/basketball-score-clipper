@@ -85,3 +85,23 @@ or an unobserved basket as accepted. Explicit bounds must include `score_time`.
 It prefers entry time; older events without it are explicitly labeled as
 confirmation timestamps awaiting precise entry localization. Pending events are
 optional and exported separately, never counted as confirmed makes.
+
+## Optional highlight metadata
+
+These fields are descriptive editing metadata; existing CLI scripts do not
+enforce player quotas, select a Top N, classify three-pointers, mix songs or
+validate visual evidence automatically.
+
+- `rank`: on-screen ranking number; distinct from `play_order` in a countdown.
+- `play_order`: one-based segment position in the final montage.
+- `player_id`, `player_label`: stable local group ID and visible jersey/clothing
+  description. Use unknown when unresolved; do not infer a name.
+- `category`, `selection_reason`: observed shot type and visible defensive context.
+- `review.evidence_file`: saved continuous-frame evidence relative to the project.
+- `prior_review`: preserved review before a correction; current `review.status`
+  controls selection. Record why and when an acceptance was withdrawn.
+
+Keep a separate composition manifest for source bounds, montage bounds, playback
+speed, mapped basket entry, and music offset/credits. Source times stay in the
+event JSON; output times belong in the composition manifest. A saved manifest
+does not certify that visual or listening checks were performed.

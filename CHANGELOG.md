@@ -1,5 +1,31 @@
 # Changelog / 版本变更记录
 
+## v0.3.0 — 2026-10-12
+
+### 中文
+
+根据实际集锦制作与纠错过程，补充显式视频请求的选片、声音与更正流程。默认时间表＋SRT模式不变；本版主要更新Skill与文档，不新增训练模型或自动集锦脚本。
+
+- 入选镜头及实际导出成片必须重新核对穿筐路径；明确篮网前方下落、网兜晃动与旧接受标签都不能单独证明进球。
+- 区分出手者、助攻与补篮者；三分核对起跳前脚位，选片兼顾贴防、身体对抗、补防及球员覆盖。
+- 按球衣/号码记录临时球员分组，覆盖请求优先每位一个确认进球；找不到未出场新球员时说明限制并确认替代方式。
+- 区分播放段序与NO.排名，避免在倒数集锦里替换错误的球。
+- 添加歌曲时保留现场原声；正式曲目、试听、署名、实际节拍相位、时间映射与替换后卡点复核纳入流程。
+- 用户指出错球时撤销旧确认，并同步事件JSON、时间表、SRT与成片；保留更正来源，不把局部修改说成全量复核。
+- 新增中英文集锦指南及可选事件字段说明，提供可配置的“3个三分＋7个对抗”示例。
+
+### English
+
+Document selection, sound and correction lessons from real editing sessions. Timestamp/SRT output remains the default. This release updates skill guidance and documentation; it adds no trained detector or automatic montage script.
+
+- Recheck selected source attempts and rendered baskets; front-of-net misses, net motion and stale acceptances cannot independently establish a make.
+- Distinguish scorers, assists and put-backs; verify three-point takeoff positions and balance close defense, contact, help defense and player coverage.
+- Track local jersey/clothing groups, reserve confirmed makes for coverage requests, and explain/resolve unavailable previously unseen players.
+- Distinguish playback position from NO. rank in countdown revisions.
+- Preserve court sound when adding songs; document actual tracks, listening, attribution, recorded beat phase, time mapping and post-replacement alignment.
+- Withdraw wrong acceptances and refresh event JSON, tables, SRT and video outputs, retaining correction provenance without claiming a full re-review.
+- Add bilingual highlight guides, optional event metadata and a configurable three-pointer/contested-finish example.
+
 ## v0.2.0 — 2026-09-25
 
 ### 中文

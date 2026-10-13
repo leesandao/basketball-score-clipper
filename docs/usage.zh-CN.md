@@ -110,6 +110,11 @@ python scripts/export_timestamps.py \
 
 明确需要成片时才使用 [剪辑流程](../references/clipping-workflow.md)。HDR 原片不会被默认转换成 SDR；短预览的 HDR 色调映射还要求 FFmpeg 包含 `zscale` 和 `tonemap`，否则使用经核对的编辑器流程。
 
+制作五佳球/十佳球、要求每人一球、替换错球或添加歌曲时，使用
+[集锦制作指南](highlights.zh-CN.md)。可在调用中指定三分与对抗比例、要保留的
+NO.编号、球员覆盖、画幅、歌曲和现场原声。已有时间表可复用，但每个入选球
+仍需在原片及最终成片里重新确认；错误反馈要写回事件记录。
+
 | 问题 | 处理 |
 | --- | --- |
 | 找不到 Skill | 新一轮对话调用，或提供 `SKILL.md` 的绝对路径 |

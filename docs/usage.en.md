@@ -111,6 +111,12 @@ These are subtitle blocks, not native flag markers. Trimmed, concatenated or ret
 
 Use the [clipping workflow](../references/clipping-workflow.md) only when video output is explicitly requested. HDR sources are not silently converted to SDR; tone-mapped review proxies require FFmpeg with `zscale` and `tonemap`, or a verified editor workflow.
 
+For Top 5/Top 10 selection, one make per player, corrections or songs, read the
+[highlight guide](highlights.en.md). Specify the shot mix, retained NO. labels,
+player coverage, framing, song and court-audio preference. Reuse existing tables,
+but recheck each selected basket in the source and final render; corrections
+must reach the authoritative event record.
+
 | Problem | Action |
 | --- | --- |
 | Skill not discovered | Invoke in a new turn or provide its absolute `SKILL.md` path |

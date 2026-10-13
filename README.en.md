@@ -6,9 +6,11 @@
 [![Version](https://img.shields.io/github/v/release/leesandao/basketball-score-clipper)](https://github.com/leesandao/basketball-score-clipper/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A local basketball video skill for Codex. **Version 0.2.0 finds when the ball enters the hoop and produces a timestamp table plus SRT subtitle markers for manual editing in Jianying/CapCut.** The invocation remains `$basketball-score-clipper`.
+A local basketball video skill for Codex. **Version 0.3.0 finds when the ball enters the hoop and produces a timestamp table plus SRT subtitle markers for manual editing in Jianying/CapCut.** The invocation remains `$basketball-score-clipper`.
 
 No dedicated GPU is required. By default, work directly from local or mounted NAS originals without rendering proxies or highlights. Video clipping is available only when explicitly requested.
+
+Version 0.3.0 adds guidance for explicit highlight requests: recheck selected and rendered baskets, identify the actual scorer, balance defensive pressure and player coverage, mix real songs with court sound, align edits to actual beats, and propagate corrections. Selection and music judgment still require visual/human editing; no new automatic recognition model is included. See the [highlight guide](docs/highlights.en.md).
 
 ## How it works
 
@@ -78,6 +80,7 @@ Validated with Jianying Professional 11.4.2 on macOS: **字幕 (Captions) → �
 
 - [English guide](docs/usage.en.md) / [中文使用指南](docs/usage.zh-CN.md)
 - [Use cases](docs/use-cases.en.md) / [适用场景](docs/use-cases.zh-CN.md)
+- [Highlight editing guide](docs/highlights.en.md) / [集锦制作指南](docs/highlights.zh-CN.md)
 - [Bilingual changelog](CHANGELOG.md)
 - [Event schema](references/event-schema.md) · [Detection modes](references/detection-modes.md)
 - [Optional clipping workflow](references/clipping-workflow.md) · [Bilingual contributing guide](CONTRIBUTING.md)
