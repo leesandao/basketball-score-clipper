@@ -67,8 +67,37 @@ Borrow the requested reference's pacing, layout and countdown structure without
 assuming its audio or graphics are reusable assets. With wide half-court footage,
 a vertical canvas containing the horizontal action can preserve shooter and rim
 better than a tight vertical crop. Verify the composition at takeoff and entry.
-Use a synchronized hoop inset during replay when it helps; the inset enlarges
-evidence and does not itself validate a basket. Follow any requested aspect ratio.
+Follow any requested aspect ratio. For enlarged slow-motion framing, use the
+attacker-focused guidance below; any inset is context, not proof of a make.
+
+## Frame enlarged slow motion around the attacking player
+
+When an enlarged replay pane is used, follow the ball-handling attacker through
+the finish by default. In a split layout, retain the synchronized wide view for
+the full action and basket, and use the enlarged pane for the player's movement.
+A dedicated hoop close-up remains an option when explicitly requested.
+
+Identify the subject from possession and the actual scoring action. Follow a
+pass to its receiver or a rebound to the put-back scorer; do not stay on the
+passer or initial shooter after possession changes. After release, continue
+framing the attacker's follow-through and landing rather than chasing the ball
+to the hoop. Keep the head, torso, hands/ball and relevant footwork visible,
+allow room above the release, and retain nearby defenders where useful.
+
+For fixed-camera footage, manually reviewed position keyframes with smooth
+interpolation are sufficient without a GPU. Add keyframes around acceleration,
+direction changes, possession changes, gather and release. Record source times
+and crop centers/size in the composition metadata; clamp the crop to the source
+frame and avoid abrupt jumps or zoom changes. Use source timestamps to evaluate
+the crop at each replay frame so speed changes do not desynchronize tracking.
+Widen the crop or return to the wide view if tight framing loses the player or
+occlusion makes the subject unclear; do not silently switch to a nearby defender.
+
+Inspect the actual exported replay at its start, drive, gather, release, landing
+and end, with consecutive frames around rapid movement or possession changes.
+Check subject identity, head/hand/ball margins, footwork, smooth movement and
+synchronization with the wide pane. A correct source keyframe alone does not
+establish that the rendered slow-motion crop is correct.
 
 ## Choose real music and mix it with court sound
 

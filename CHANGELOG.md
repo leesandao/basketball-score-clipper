@@ -1,5 +1,21 @@
 # Changelog / 版本变更记录
 
+## v0.3.1 — 2026-10-16
+
+### 中文
+
+- 放大慢放默认跟随持球进攻球员，覆盖突破、对抗、出手与落地；分屏时保留同步全场视角。专门的篮筐特写按明确要求使用。
+- 球权转换时跟随接球者或实际补篮得分者；出手后保持球员特写，保留身体、手与球、脚步及出手空间。
+- 记录原片时间与裁切关键帧，平滑插值并映射到慢放；遮挡或跟随不清时扩大取景，逐球复核实际导出画面。
+- 同步中英文指南和调用示例。仅更新 Skill 与文档，不新增自动球员跟踪器，默认时间表＋SRT模式不变。
+
+### English
+
+- Make enlarged slow motion follow the ball-handling attacker through the drive, contest, release and landing, with a synchronized wide view in split layouts. Use dedicated hoop close-ups when explicitly requested.
+- Follow possession to receivers or actual put-back scorers; stay with the player after release and preserve body, hands/ball, footwork and release margins.
+- Record source-time crop keyframes, interpolate smoothly and map to replay speed; widen unclear framing and review every exported replay.
+- Update bilingual guides and request examples. Guidance only: no automatic player tracker is added, and timestamp/SRT output remains the default.
+
 ## v0.3.0 — 2026-10-12
 
 ### 中文

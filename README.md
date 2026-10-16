@@ -6,11 +6,11 @@
 [![Version](https://img.shields.io/github/v/release/leesandao/basketball-score-clipper)](https://github.com/leesandao/basketball-score-clipper/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-面向 Codex 的本地篮球视频 Skill。**v0.3.0 默认找出球进入篮筐的时间，输出进球时间表和可导入剪映的 SRT 字幕定位标记，供人工快速定位剪辑。** 调用名称继续使用 `$basketball-score-clipper`。
+面向 Codex 的本地篮球视频 Skill。**v0.3.1 默认找出球进入篮筐的时间，输出进球时间表和可导入剪映的 SRT 字幕定位标记，供人工快速定位剪辑。** 调用名称继续使用 `$basketball-score-clipper`。
 
 不需要独立 GPU。默认直接分析本地或已挂载 NAS 的原视频，不生成代理视频或集锦。仅在明确要求时启用视频剪辑。
 
-v0.3.0 补充显式集锦请求的制作规则：入选镜头与成片重新复核、区分真实进球者、兼顾对抗和球员覆盖、保留原声叠加正式歌曲、按实际节拍剪辑，以及错球更正与记录同步。选球与音乐判断仍需视觉/人工编辑，不是新增全自动识别模型。见 [集锦制作指南](docs/highlights.zh-CN.md)。
+显式集锦请求支持入选镜头与成片复核、真实进球者识别、对抗与球员覆盖、原声配乐、实际节拍剪辑及错球更正。v0.3.1 明确：放大慢放默认跟随持球进攻球员，分屏时保留同步全场视角，并检查裁切和球权转换。选球、跟随与音乐判断仍需视觉/人工编辑，不是新增全自动识别模型。见 [集锦制作指南](docs/highlights.zh-CN.md)。
 
 ## 工作方式
 

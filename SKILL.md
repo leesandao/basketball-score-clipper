@@ -99,6 +99,10 @@ and update the authoritative event record and affected table/SRT/video outputs.
 Do not describe the remaining old records as newly reviewed.
 
 For event fields read [references/event-schema.md](references/event-schema.md).
+When a montage uses an enlarged slow-motion pane, follow the ball-handling
+attacker through the finish, with smooth reframing and enough room for the body,
+ball and release. In a split layout, retain the wide view for basket context.
+Use the replay-framing guidance below and verify the actual rendered crop.
 Only when video output is explicitly requested, read
 [references/clipping-workflow.md](references/clipping-workflow.md). For Top N
 selection, player balance, music, mixing, beat alignment or a montage revision,

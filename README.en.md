@@ -6,11 +6,11 @@
 [![Version](https://img.shields.io/github/v/release/leesandao/basketball-score-clipper)](https://github.com/leesandao/basketball-score-clipper/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A local basketball video skill for Codex. **Version 0.3.0 finds when the ball enters the hoop and produces a timestamp table plus SRT subtitle markers for manual editing in Jianying/CapCut.** The invocation remains `$basketball-score-clipper`.
+A local basketball video skill for Codex. **Version 0.3.1 finds when the ball enters the hoop and produces a timestamp table plus SRT subtitle markers for manual editing in Jianying/CapCut.** The invocation remains `$basketball-score-clipper`.
 
 No dedicated GPU is required. By default, work directly from local or mounted NAS originals without rendering proxies or highlights. Video clipping is available only when explicitly requested.
 
-Version 0.3.0 adds guidance for explicit highlight requests: recheck selected and rendered baskets, identify the actual scorer, balance defensive pressure and player coverage, mix real songs with court sound, align edits to actual beats, and propagate corrections. Selection and music judgment still require visual/human editing; no new automatic recognition model is included. See the [highlight guide](docs/highlights.en.md).
+Explicit highlight guidance covers basket review, actual scorers, defensive pressure, player coverage, songs with court sound, beat alignment and corrections. Version 0.3.1 makes enlarged slow motion follow the ball-handling attacker by default, retaining a synchronized wide view in split layouts and checking crops and possession changes. Selection, tracking and music judgment still require visual/human editing; no new automatic recognition model is included. See the [highlight guide](docs/highlights.en.md).
 
 ## How it works
 

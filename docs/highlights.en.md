@@ -46,7 +46,23 @@ and reuse completed scans rather than rescanning or transcoding the full match.
 
 Adapt a requested reference's countdown, pacing and layout. For portrait output
 from wide half-court footage, keep both shooter and hoop visible. A synchronized
-hoop inset can help during replay but is not independent proof of a make.
+wide view belongs in the upper pane of a split layout; the enlarged slow-motion
+pane below follows the ball-handling attacker through the drive, contest, release
+and landing by default. After release, stay with the player rather than chasing
+the ball to the hoop. Use a dedicated hoop close-up when explicitly requested.
+
+Follow possession to the receiver or actual put-back scorer, not the passer or a
+nearby defender. Leave room for the head, body, hands/ball, relevant footwork and
+release, retaining nearby defenders where useful. Manually reviewed position
+keyframes with smooth interpolation can move the crop without a GPU. Record crop
+positions/size against source time and map them to slow motion to avoid jitter,
+sudden jumps or tracking lag. Widen the view or return to the wide shot when
+occlusion or motion makes the subject unclear.
+
+Check the actual exported replay at the start, drive, gather, release, landing
+and ending, including consecutive frames around fast motion and possession
+changes. Verify the subject and complete action remain visible. An enlarged
+pane is not independent proof of a make.
 Inspect framing, color, text and basket sequences in the actual rendered file.
 
 **Playback position differs from rank.** In a 10-to-1 countdown, the seventh
@@ -92,7 +108,8 @@ Use $basketball-score-clipper to make a Top 10 from /path/to/game.mp4.
 Confirm each made basket first, then select 3 exciting three-pointers and
 7 contested finishes. Aim for at least one make per player and preserve
 complete actions. Keep court audio, add a fully arranged song and edit to
-its actual beats. Include original-source basket times. Report coverage
+its actual beats. Make enlarged slow motion follow the ball-handling attacker,
+with a synchronized wide view above. Include original-source basket times. Report coverage
 gaps and exclude uncertain attempts.
 ```
 
